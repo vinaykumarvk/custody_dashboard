@@ -2,11 +2,13 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
+  mode: 'development',
   entry: './src/index.js',
   output: {
     path: path.resolve(__dirname, 'public'),
     filename: 'bundle.js',
-    publicPath: '/'
+    publicPath: '/',
+    clean: true
   },
   module: {
     rules: [
@@ -23,47 +25,77 @@ module.exports = {
       },
       {
         test: /\.(png|svg|jpg|jpeg|gif)$/i,
-        type: 'asset/resource',
+        type: 'asset/resource'
       }
     ]
   },
   resolve: {
-    extensions: ['.js', '.jsx']
+    extensions: ['.js', '.jsx'],
+    modules: [path.resolve(__dirname, 'src'), 'node_modules']
   },
   plugins: [
     new HtmlWebpackPlugin({
       template: './index.html',
       filename: 'index.html',
-      inject: 'body',
-      publicPath: '/'
+      inject: true,
+      meta: {
+        viewport: 'width=device-width, initial-scale=1, shrink-to-fit=no'
+      }
     })
   ],
   devServer: {
-    static: [
-      {
-        directory: path.join(__dirname, 'public'),
-        publicPath: '/',
-      }
-    ],
-    port: 5000,
-    historyApiFallback: true,
-    hot: true,
-    host: '0.0.0.0',
-    allowedHosts: 'all',
-    client: {
-      webSocketURL: 'auto://0.0.0.0:0/ws'
-    },
-    devMiddleware: {
+    static: {
+      directory: path.join(__dirname, 'public'),
       publicPath: '/'
     },
-    // Add proxy configuration to forward API requests to the backend
-    proxy: [
-      {
-        context: ['/api'],
-        target: 'http://localhost:3000',
-        secure: false,
-        changeOrigin: true
+    port: 3000,
+    historyApiFallback: true,
+    hot: true,
+    open: true,
+    host: 'localhost',
+    compress: true,
+    devMiddleware: {
+      publicPath: '/',
+      writeToDisk: true
+    },
+    client: {
+      overlay: {
+        errors: true,
+        warnings: false
+      },
+      progress: true,
+      logging: 'info'
+    },
+    setupMiddlewares: (middlewares, devServer) => {
+      if (!devServer) {
+        throw new Error('webpack-dev-server is not defined');
       }
-    ]
+      return middlewares;
+    }
+  },
+  stats: {
+    colors: true,
+    hash: false,
+    version: false,
+    timings: true,
+    assets: true,
+    chunks: false,
+    modules: false,
+    reasons: false,
+    children: false,
+    source: false,
+    errors: true,
+    errorDetails: true,
+    warnings: true,
+    publicPath: false
+  },
+  devtool: 'eval-source-map',
+  performance: {
+    hints: 'warning',
+    maxEntrypointSize: 512000,
+    maxAssetSize: 512000
+  },
+  cache: {
+    type: 'filesystem'
   }
 };
